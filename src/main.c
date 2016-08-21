@@ -26,7 +26,6 @@
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
-#include "usi.h"
 
 // Functions
 static void setup(void);
