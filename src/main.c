@@ -27,10 +27,17 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 
+// #define LED PB3
+//
+// #define output_low(port, pin) port &= ~(1 << pin)
+// #define output_high(port, pin) port |= (1 << pin)
+// #define set_input(portdir, pin) portdir &= ~(1 << pin)
+// #define set_output(portdir, pin) portdir |= (1 << pin)
+
 // Functions
 static void setup(void);
 
-//
+// Constants/variables
 static const uint8_t COUNT_ONE_SECOND = 30;
 volatile uint16_t timerCount;
 volatile uint8_t buttonCount;
@@ -43,7 +50,7 @@ int main(void) {
 
 static void setup(void) {
     //Outputs
-    DDRB |= (1 << PB3);
+	DDRB |= (1 << PB3);
 
     //Timer intrrupt
     TCCR1 |= (1 << CS10) | (1 << CS11) | (1 << CS13); //Set prescaler to 1024
@@ -57,20 +64,26 @@ static void setup(void) {
 }
 
 ISR(PCINT0_vect){
+	//TODO: Make sure that we only react once per button push (interrupt triggers on all changes - low is when button is pushed)
     ++buttonCount;
 }
 
 ISR(TIM1_OVF_vect) {
     if (buttonCount > 0) {
+		//If led is not turned on - do so
         if (!(PORTB & (1 << PB3))) {
             PORTB |= (1 << PB3);
         }
 
         if (++timerCount == COUNT_ONE_SECOND) {
-            --buttonCount;
+            // --buttonCount;
+			PORTB ^= (1 << PB3);
             timerCount = 0;
         }
     } else {
-        PORTB &= ~(1 << PB3);
+		//If led is turned on - turn it off
+		if ((PORTB & (1 << PB3))) {
+			PORTB &= ~(1 << PB3);
+		}
     }
 }
